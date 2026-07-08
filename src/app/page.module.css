@@ -1,142 +1,139 @@
 .page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  min-height: 100dvh;
+  background: radial-gradient(
+    circle at top left,
+    #e6f2f8 0%,
+    #edf4f7 40%,
+    #f4f8fa 100%
+  );
+  padding: clamp(0.8rem, 1.6vw, 1.5rem);
+  display: grid;
+  gap: 0.9rem;
 }
 
 .main {
-  display: flex;
-  flex: 1;
-  width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+  max-width: 70rem;
+  margin-inline: auto;
+  display: grid;
+  align-content: start;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 1rem;
 }
 
 .intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
+  background: #173141;
+  border-radius: 1rem;
+  border: 1px solid #2c4f63;
+  color: #f6fbfd;
+  box-shadow: 0 18px 38px rgba(19, 45, 60, 0.2);
+  padding: clamp(0.85rem, 1.6vw, 1.35rem);
+  display: grid;
+  gap: 0.65rem;
+  align-content: center;
+}
+
+.kicker {
+  color: #b6d7e6;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
 .intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
+  font-size: clamp(1.45rem, 2.6vw, 2.1rem);
+  line-height: 1.15;
   text-wrap: balance;
-  color: var(--text-primary);
 }
 
 .intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
+  font-size: clamp(0.92rem, 1.5vw, 1rem);
+  line-height: 1.45;
+  color: #d8e7ef;
 }
 
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
+.aslLabLink {
+  display: inline-block;
+  color: #d5ebff;
+  border: 1px solid rgba(168, 212, 244, 0.45);
+  border-radius: 0.6rem;
+  padding: 0.4rem 0.62rem;
+  font-weight: 700;
+  font-size: 0.84rem;
 }
 
-.ctas {
-  display: flex;
-  flex-direction: row;
+.aslLabLink:hover {
+  color: #ffffff;
+  border-color: #7ac7ff;
+}
+
+.purposeSection {
+  max-width: 70rem;
+  margin-inline: auto;
   width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
+  background: #ffffff;
+  border: 1px solid #d6dee3;
+  border-radius: 1rem;
+  box-shadow: 0 10px 26px rgba(23, 49, 65, 0.08);
+  padding: clamp(0.85rem, 1.6vw, 1.35rem);
+  display: grid;
+  gap: 0.75rem;
 }
 
-.ctas a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
+.purposeSection h2 {
+  color: #173141;
+  font-size: clamp(1.12rem, 1.7vw, 1.4rem);
+  line-height: 1.2;
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
+.purposeSection > p {
+  color: #35586c;
+  font-size: 0.95rem;
+  line-height: 1.45;
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
+.purposeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.purposeCard {
+  border: 1px solid #d5e1e8;
+  border-radius: 0.75rem;
+  background: #f7fbfd;
+  padding: 0.7rem 0.8rem;
+  display: grid;
+  gap: 0.4rem;
 }
 
-@media (max-width: 600px) {
+.purposeCard h3 {
+  color: #173141;
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+
+.purposeCard p {
+  color: #3d6072;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.contactNote {
+  margin-top: 0.2rem;
+  border-top: 1px solid #e2eaef;
+  padding-top: 0.7rem;
+  color: #35586c;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 980px) {
   .main {
-    padding: 48px 24px;
+    grid-template-columns: 1fr;
   }
 
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
-
-  .page {
-    --background: #000;
-    --foreground: #000;
-
-    --text-primary: #ededed;
-    --text-secondary: #999;
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
+  .purposeGrid {
+    grid-template-columns: 1fr;
   }
 }

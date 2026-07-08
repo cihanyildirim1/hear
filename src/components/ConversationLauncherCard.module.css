@@ -1,0 +1,199 @@
+.card {
+  width: min(100%, 34rem);
+  background: #ffffff;
+  border: 1px solid #d6dee3;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(23, 49, 65, 0.08);
+  padding: 1rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.header h1 {
+  color: #173141;
+  font-size: 1.4rem;
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+}
+
+.header p {
+  color: #3a5566;
+  font-size: 0.92rem;
+}
+
+.roleHint {
+  color: #214356;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.qrPanel {
+  background: #f7fafb;
+  border: 1px solid #d6e2e8;
+  border-radius: 0.9rem;
+  padding: 0.75rem;
+  text-align: center;
+  min-height: 14.5rem;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.8rem;
+}
+
+.qrFrame {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  border: 1px solid #d6e2e8;
+  padding: 0.65rem;
+}
+
+.roomId {
+  color: #264759;
+  font-size: 0.95rem;
+  word-break: break-all;
+}
+
+.status {
+  color: #214356;
+  font-weight: 600;
+}
+
+.error {
+  color: #8f1d1d;
+  font-weight: 600;
+}
+
+.linkBlock {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.linkLabel {
+  color: #24485b;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.linkInput {
+  width: 100%;
+  border: 1px solid #b9c9d2;
+  border-radius: 0.6rem;
+  font-size: 0.88rem;
+  color: #173141;
+  background: #fff;
+  padding: 0.55rem 0.7rem;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.primaryButton,
+.secondaryButton {
+  border-radius: 0.65rem;
+  border: 1px solid transparent;
+  min-height: 2.35rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.primaryButton {
+  background: #1e5a77;
+  color: #ffffff;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: #184b63;
+}
+
+.secondaryButton {
+  background: #ffffff;
+  color: #1e5a77;
+  border-color: #8eadbe;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: #edf4f8;
+}
+
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.linkInput:focus-visible {
+  outline: 3px solid #1e5a77;
+  outline-offset: 2px;
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.feedback {
+  min-height: 1.2rem;
+  color: #27495b;
+  font-size: 0.9rem;
+}
+
+.joinBlock {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.joinAsAButton {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 2.35rem;
+  border-radius: 0.65rem;
+  border: 1px solid #1e5a77;
+  color: #1e5a77;
+  font-weight: 700;
+  background: #ffffff;
+}
+
+.joinAsAButton:hover {
+  background: #edf4f8;
+}
+
+.joinAsAButton:focus-visible {
+  outline: 3px solid #1e5a77;
+  outline-offset: 2px;
+}
+
+.joinAsAButton[aria-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.joinNotice {
+  color: #1f6b35;
+  background: #e8f6ee;
+  border: 1px solid #bfdfca;
+  border-radius: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 0.8rem;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .actions {
+    grid-template-columns: 1fr;
+  }
+}
