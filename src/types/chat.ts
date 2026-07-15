@@ -13,4 +13,6 @@ export type SocketEvent =
   | { type: "message"; message: ChatMessage }
   | { type: "typing"; sender: RoleLabel; isTyping: boolean }
   | { type: "participant_joined"; role: RoleLabel }
-  | { type: "participant_left"; role: RoleLabel };
+  | { type: "participant_left"; role: RoleLabel }
+  | { type: "participant_names"; names: Partial<Record<RoleLabel, string>> }
+  | { type: "name_updated"; role: RoleLabel; name: string };

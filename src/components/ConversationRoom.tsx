@@ -83,7 +83,13 @@ export function ConversationRoom({
   conversationId,
   initialRole,
 }: ConversationRoomProps) {
-  const [isDarkTheme, setIsDarkTheme] = useState(true);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [selfNameInput, setSelfNameInput] = useState("");
+  const [selfName, setSelfName] = useState<string | null>(null);
+  const [showPreJoinNamePrompt, setShowPreJoinNamePrompt] = useState(true);
+  const [participantNames, setParticipantNames] = useState<
+    Partial<Record<RoleLabel, string>>
+  >({});
   const [connectionStatus, setConnectionStatus] = useState<
     "connecting" | "connected" | "disconnected"
   >("connecting");
@@ -101,6 +107,8 @@ export function ConversationRoom({
   const presenceTimeoutRef = useRef<number | undefined>(undefined);
   const speechRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const roleRef = useRef<RoleLabel>(initialRole);
+  const selfNameRef = useRef<string | null>(null);
+  const participantNamesRef = useRef<Partial<Record<RoleLabel, string>>>({});
   const previousLatestMessageIdRef = useRef<string | null>(null);
   const moveHighlightTimeoutRef = useRef<number | undefined>(undefined);
   const listEndRef = useRef<HTMLDivElement | null>(null);
@@ -111,6 +119,12 @@ export function ConversationRoom({
     () => (role === "A" ? "B" : "A"),
     [role],
   );
+  const fallbackMyDisplayName = role === "A" ? "Person A" : "Person B";
+  const fallbackOtherDisplayName = otherRole === "A" ? "Person A" : "Person B";
+  const myDisplayName =
+    participantNames[role]?.trim() || selfName?.trim() || fallbackMyDisplayName;
+  const otherDisplayName =
+    participantNames[otherRole]?.trim() || fallbackOtherDisplayName;
   const latestMessage =
     messages.length > 0 ? messages[messages.length - 1] : null;
   const historyMessages = useMemo(
@@ -128,8 +142,34 @@ export function ConversationRoom({
   }, [role]);
 
   useEffect(() => {
+    selfNameRef.current = selfName;
+  }, [selfName]);
+
+  useEffect(() => {
+    participantNamesRef.current = participantNames;
+  }, [participantNames]);
+
+  useEffect(() => {
+    if (showPreJoinNamePrompt) {
+      return;
+    }
+
+    const getDisplayNameByRole = (targetRole: RoleLabel): string => {
+      if (targetRole === roleRef.current) {
+        const ownName =
+          participantNamesRef.current[targetRole]?.trim() ||
+          selfNameRef.current?.trim();
+        return ownName || (targetRole === "A" ? "Person A" : "Person B");
+      }
+
+      return (
+        participantNamesRef.current[targetRole]?.trim() ||
+        (targetRole === "A" ? "Person A" : "Person B")
+      );
+    };
+
     let isMounted = true;
-    const socket = new WebSocket(toWebSocketUrl(conversationId, initialRole));
+    const socket = new WebSocket(toWebSocketUrl(conversationId, role));
     socketRef.current = socket;
 
     socket.onopen = () => {
@@ -138,6 +178,17 @@ export function ConversationRoom({
       }
       setConnectionStatus("connected");
       setErrorMessage(null);
+
+      const name = selfNameRef.current?.trim();
+      if (name) {
+        socket.send(
+          JSON.stringify({
+            type: "name_update",
+            sender: roleRef.current,
+            name,
+          }),
+        );
+      }
     };
 
     socket.onmessage = (event) => {
@@ -150,6 +201,17 @@ export function ConversationRoom({
 
         if (payload.type === "role_assigned") {
           setRole(payload.role);
+
+          const name = selfNameRef.current?.trim();
+          if (name && socket.readyState === WebSocket.OPEN) {
+            socket.send(
+              JSON.stringify({
+                type: "name_update",
+                sender: payload.role,
+                name,
+              }),
+            );
+          }
           return;
         }
 
@@ -158,8 +220,25 @@ export function ConversationRoom({
           return;
         }
 
+        if (payload.type === "participant_names") {
+          setParticipantNames((previous) => ({
+            ...previous,
+            ...(payload.names.A ? { A: payload.names.A } : {}),
+            ...(payload.names.B ? { B: payload.names.B } : {}),
+          }));
+          return;
+        }
+
         if (payload.type === "message") {
           setMessages((previous) => [...previous, payload.message]);
+          return;
+        }
+
+        if (payload.type === "name_updated") {
+          setParticipantNames((previous) => ({
+            ...previous,
+            [payload.role]: payload.name,
+          }));
           return;
         }
 
@@ -168,13 +247,17 @@ export function ConversationRoom({
             setTypingLabel(null);
             return;
           }
-          setTypingLabel(`User ${payload.sender} is typing...`);
+          setTypingLabel(
+            `${getDisplayNameByRole(payload.sender)} is typing...`,
+          );
           return;
         }
 
         if (payload.type === "participant_joined") {
           if (payload.role !== roleRef.current) {
-            setPresenceLabel(`User ${payload.role} joined the room.`);
+            setPresenceLabel(
+              `${getDisplayNameByRole(payload.role)} joined the room.`,
+            );
             if (presenceTimeoutRef.current) {
               window.clearTimeout(presenceTimeoutRef.current);
             }
@@ -187,7 +270,9 @@ export function ConversationRoom({
 
         if (payload.type === "participant_left") {
           if (payload.role !== roleRef.current) {
-            setPresenceLabel(`User ${payload.role} left the room.`);
+            setPresenceLabel(
+              `${getDisplayNameByRole(payload.role)} left the room.`,
+            );
             if (presenceTimeoutRef.current) {
               window.clearTimeout(presenceTimeoutRef.current);
             }
@@ -224,9 +309,12 @@ export function ConversationRoom({
       if (presenceTimeoutRef.current) {
         window.clearTimeout(presenceTimeoutRef.current);
       }
+      setTypingLabel(null);
+      setPresenceLabel(null);
+      socketRef.current = null;
       socket.close();
     };
-  }, [conversationId, initialRole]);
+  }, [conversationId, role, showPreJoinNamePrompt]);
 
   useEffect(() => {
     listEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -380,6 +468,70 @@ export function ConversationRoom({
     setDraft("");
   }
 
+  function handleNameSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const resolvedName =
+      selfNameInput.trim() || (role === "A" ? "Person A" : "Person B");
+
+    setSelfName(resolvedName);
+    setParticipantNames((previous) => ({
+      ...previous,
+      [role]: resolvedName,
+    }));
+    setSelfNameInput("");
+    setShowPreJoinNamePrompt(false);
+    setConnectionStatus("connecting");
+  }
+
+  if (showPreJoinNamePrompt) {
+    return (
+      <main
+        className={`${styles.page} ${isDarkTheme ? styles.darkTheme : styles.lightTheme}`}
+      >
+        <section className={styles.setupShell} aria-labelledby='setup-title'>
+          <h1 id='setup-title' className={styles.setupTitle}>
+            Join as Person {role}
+          </h1>
+          <p className={styles.setupText}>
+            Enter your name to enter the chat room.
+          </p>
+
+          <form className={styles.setupForm} onSubmit={handleNameSubmit}>
+            <label className={styles.setupLabel} htmlFor='selfName'>
+              Your name (Person {role})
+            </label>
+            <input
+              id='selfName'
+              type='text'
+              value={selfNameInput}
+              onChange={(event) => setSelfNameInput(event.target.value)}
+              className={styles.setupInput}
+              placeholder={role === "A" ? "Person A" : "Person B"}
+              autoComplete='off'
+            />
+
+            <div className={styles.setupActions}>
+              <button
+                type='button'
+                className={styles.themeButton}
+                onClick={() => setIsDarkTheme((value) => !value)}
+                aria-label={
+                  isDarkTheme ? "Switch to light mode" : "Switch to dark mode"
+                }
+              >
+                {isDarkTheme ? "Light" : "Dark"}
+              </button>
+              <button type='submit' className={styles.setupSubmit}>
+                Enter as Person {role}
+              </button>
+            </div>
+          </form>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main
       className={`${styles.page} ${isDarkTheme ? styles.darkTheme : styles.lightTheme}`}
@@ -387,7 +539,7 @@ export function ConversationRoom({
       <section className={styles.chatShell} aria-labelledby='room-title'>
         <header className={styles.topBar}>
           <h1 id='room-title' className={styles.helloTitle}>
-            Hello User {otherRole}
+            Hello {otherDisplayName}
           </h1>
 
           <div className={styles.topBarActions}>
@@ -417,7 +569,9 @@ export function ConversationRoom({
 
         <div className={styles.metaRow}>
           <p className={styles.roomMeta}>Room: {conversationId}</p>
-          <p className={styles.roomMeta}>You are User {role}</p>
+          <p className={styles.roomMeta}>
+            You are {myDisplayName} (User {role})
+          </p>
         </div>
 
         {errorMessage && (
@@ -436,8 +590,8 @@ export function ConversationRoom({
             <article className={styles.latestMessage}>
               <p className={styles.latestSender}>
                 {latestMessage.sender === role
-                  ? `You (User ${role})`
-                  : `User ${otherRole}`}
+                  ? `You (${myDisplayName})`
+                  : otherDisplayName}
               </p>
               <p className={styles.latestContent}>{latestMessage.content}</p>
               <time
@@ -483,7 +637,7 @@ export function ConversationRoom({
                     aria-label={isMine ? "Your message" : "Other user message"}
                   >
                     <p className={styles.senderTag}>
-                      {isMine ? `You (User ${role})` : `User ${otherRole}`}
+                      {isMine ? `You (${myDisplayName})` : otherDisplayName}
                     </p>
                     <p>{message.content}</p>
                     <time dateTime={message.timestamp}>
